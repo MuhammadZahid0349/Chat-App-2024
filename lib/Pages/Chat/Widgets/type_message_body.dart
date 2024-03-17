@@ -2,11 +2,15 @@
 
 import 'package:chat_app_2024/Config/ImagesPath.dart';
 import 'package:chat_app_2024/Controller/chat_controller.dart';
+import 'package:chat_app_2024/Controller/image_picker_controller.dart';
 import 'package:chat_app_2024/Model/user_model.dart';
+import 'package:chat_app_2024/Pages/Chat/Widgets/bottom_sheet_btns.dart';
+import 'package:chat_app_2024/Widgets/image_picker_bottom_sheet.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:get/get.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:velocity_x/velocity_x.dart';
 
 class TypeMessageBody extends StatelessWidget {
@@ -16,6 +20,8 @@ class TypeMessageBody extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     ChatController chatController = Get.put(ChatController());
+    ImagePickerController imagePickerController =
+        Get.put(ImagePickerController());
     TextEditingController messageController = TextEditingController();
 
     RxString message = "".obs;
@@ -48,30 +54,34 @@ class TypeMessageBody extends StatelessWidget {
                 filled: false, hintText: "Type message ..."),
           )),
           8.w.widthBox,
-          SizedBox(
-            height: 26.h,
-            width: 26.w,
-            child: SvgPicture.asset(
-              AssetsPathImages.chatGallerySvg,
-              width: 23.0,
-            ),
-          ),
-          4.w.widthBox,
-          Obx(
-            () => message.value == ""
-                ? SizedBox(
+          Obx(() => chatController.selectedImagePath.value == ""
+              ? InkWell(
+                  splashColor: Colors.transparent,
+                  highlightColor: Colors.transparent,
+                  onTap: () async {
+                    imagePickerBottomSheet(
+                        context, chatController, imagePickerController);
+                  },
+                  child: SizedBox(
                     height: 26.h,
                     width: 26.w,
                     child: SvgPicture.asset(
-                      AssetsPathImages.chatMicSvg,
-                      width: 25.0,
+                      AssetsPathImages.chatGallerySvg,
+                      width: 23.0,
                     ),
-                  )
-                : InkWell(
+                  ),
+                )
+              : const SizedBox()),
+          4.w.widthBox,
+          Obx(
+            () => message.value != "" ||
+                    chatController.selectedImagePath.value != ""
+                ? InkWell(
                     splashColor: Colors.transparent,
                     highlightColor: Colors.transparent,
                     onTap: () {
-                      if (messageController.text.isNotEmpty) {
+                      if (messageController.text.isNotEmpty ||
+                          chatController.selectedImagePath.value.isNotEmpty) {
                         chatController.sendMessage(
                             userModel.id!, messageController.text, userModel);
                         messageController.clear();
@@ -86,6 +96,16 @@ class TypeMessageBody extends StatelessWidget {
                         width: 23.0,
                       ),
                     ),
+                  )
+                : SizedBox(
+                    height: 26.h,
+                    width: 26.w,
+                    child: chatController.isLoading.value
+                        ? const CircularProgressIndicator()
+                        : SvgPicture.asset(
+                            AssetsPathImages.chatMicSvg,
+                            width: 25.0,
+                          ),
                   ),
           )
         ],

@@ -1,3 +1,4 @@
+import 'package:chat_app_2024/Controller/contact_controller.dart';
 import 'package:chat_app_2024/Controller/profile_controller.dart';
 import 'package:chat_app_2024/Model/chat_model_f.dart';
 import 'package:chat_app_2024/Model/chat_room_model.dart';
@@ -12,8 +13,11 @@ import 'package:uuid/uuid.dart';
 class ChatController extends GetxController {
   final auth = FirebaseAuth.instance;
   final db = FirebaseFirestore.instance;
+  RxBool isLoading = false.obs;
   var uuid = Uuid();
-  ProfileController controller = Get.put(ProfileController());
+  RxString selectedImagePath = "".obs;
+  ProfileController profileController = Get.put(ProfileController());
+  ContactController contactController = Get.put(ContactController());
 
   String getRoomID(String targetUserID) {
     String currentUserID = auth.currentUser!.uid;
@@ -50,20 +54,30 @@ class ChatController extends GetxController {
     UserModel targetUser,
   ) async {
     // EasyLoading.show();
+    isLoading.value = true;
     String chatId = uuid.v6();
     String roomId = getRoomID(targetUserID);
     DateTime timestamp = DateTime.now();
     String nowTime = DateFormat('hh:mm a').format(timestamp);
 
-    UserModel sender = getSender(controller.currentuser.value, targetUser);
-    UserModel receiver = getReceiver(controller.currentuser.value, targetUser);
+    UserModel sender =
+        getSender(profileController.currentuser.value, targetUser);
+    UserModel receiver =
+        getReceiver(profileController.currentuser.value, targetUser);
+
+    RxString imageUrl = "".obs;
+    if (selectedImagePath.value.isNotEmpty) {
+      imageUrl.value =
+          await profileController.uploadFileToFirebase(selectedImagePath.value);
+    }
 
     var newChat = ChatModel(
       message: message,
+      imageUrl: imageUrl.value,
       id: chatId,
       senderId: auth.currentUser!.uid,
       receiverId: targetUserID,
-      senderName: controller.currentuser.value.name,
+      senderName: profileController.currentuser.value.name,
       timestamp: DateTime.now().toString(),
     );
 
@@ -86,10 +100,15 @@ class ChatController extends GetxController {
           .set(
             newChat.toJson(),
           );
+      selectedImagePath.value = "";
       await db.collection("chats").doc(roomId).set(roomDetails.toJson());
+
+      await contactController
+          .saveContact(targetUser); // add this for group context
     } catch (e) {
       print(e);
     }
+    isLoading.value = false;
     // EasyLoading.dismiss();
   }
 

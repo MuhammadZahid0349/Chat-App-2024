@@ -5,6 +5,7 @@ import 'package:chat_app_2024/Config/StringData.dart';
 import 'package:chat_app_2024/Controller/contact_controller.dart';
 import 'package:chat_app_2024/Controller/profile_controller.dart';
 import 'package:chat_app_2024/Pages/Contact-page/contact_page.dart';
+import 'package:chat_app_2024/Pages/Groups-Pages/group_page.dart';
 import 'package:chat_app_2024/Pages/Home/Widgets/chats_list.dart';
 import 'package:chat_app_2024/Pages/Home/Widgets/tab_bar.dart';
 import 'package:chat_app_2024/Pages/Profile-Page/profile_page.dart';
@@ -65,13 +66,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         padding: const EdgeInsets.all(10.0),
         child: TabBarView(controller: tabController, children: [
           const ChatList(),
-          ListView(
-            children: [
-              ListTile(
-                title: Text("Name Zahid"),
-              )
-            ],
-          ),
+          const GroupPage(),
           ListView(
             children: [
               ListTile(

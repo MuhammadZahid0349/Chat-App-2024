@@ -1,7 +1,9 @@
 // ignore_for_file: avoid_print
 
 import 'package:chat_app_2024/Model/user_model.dart';
+import 'package:chat_app_2024/Pages/Auth/auth_page.dart';
 import 'package:chat_app_2024/Pages/Home/home_screen.dart';
+import 'package:chat_app_2024/Pages/Splash-Page/splash_screen.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
@@ -66,7 +68,7 @@ class AuthController extends GetxController {
     EasyLoading.show();
     await auth.signOut();
     EasyLoading.dismiss();
-    Get.offAll(() => const HomeScreen());
+    Get.offAll(() => const AuthPage());
   }
 
   Future<void> initUser(

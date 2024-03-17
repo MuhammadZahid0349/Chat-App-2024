@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:chat_app_2024/Config/ImagesPath.dart';
 import 'package:chat_app_2024/Controller/chat_controller.dart';
@@ -84,49 +86,100 @@ class ChatPage extends StatelessWidget {
               ))
         ],
       ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-      floatingActionButton: TypeMessageBody(
-        userModel: userModel,
-      ),
+      // floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+      // floatingActionButton: TypeMessageBody(
+      //   userModel: userModel,
+      // ),
       body: Padding(
-          padding:
-              EdgeInsets.only(bottom: 80.w, top: 10.w, right: 10.h, left: 10.h),
-          child: StreamBuilder<List<ChatModel>>(
-              stream: chatController.getMessages(userModel.id!),
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Center(
-                    child: CircularProgressIndicator(),
-                  );
-                }
-                if (snapshot.hasError) {
-                  return Center(
-                    child: Text("Erro: ${snapshot.error}"),
-                  );
-                }
-                if (snapshot.data == null) {
-                  return const Center(
-                    child: Text("No Message"),
-                  );
-                } else {
-                  return ListView.builder(
-                      reverse: true,
-                      itemCount: snapshot.data!.length,
-                      itemBuilder: (context, index) {
-                        DateTime timestamp =
-                            DateTime.parse(snapshot.data![index].timestamp!);
-                        String formattedTime =
-                            DateFormat('hh:mm a').format(timestamp);
-                        return ChatBubble(
-                            message: snapshot.data![index].message!,
-                            time: formattedTime,
-                            status: "read",
-                            isComming: snapshot.data![index].receiverId ==
-                                profileController.currentuser.value.id,
-                            imageUrl: snapshot.data![index].imageUrl ?? "");
-                      });
-                }
-              })),
+          padding: EdgeInsets.symmetric(horizontal: 10.h, vertical: 10.w),
+          child: Column(
+            children: [
+              Expanded(
+                child: Stack(
+                  children: [
+                    StreamBuilder<List<ChatModel>>(
+                        stream: chatController.getMessages(userModel.id!),
+                        builder: (context, snapshot) {
+                          if (snapshot.connectionState ==
+                              ConnectionState.waiting) {
+                            return const Center(
+                              child: CircularProgressIndicator(),
+                            );
+                          }
+                          if (snapshot.hasError) {
+                            return Center(
+                              child: Text("Erro: ${snapshot.error}"),
+                            );
+                          }
+                          if (snapshot.data == null) {
+                            return const Center(
+                              child: Text("No Message"),
+                            );
+                          } else {
+                            return ListView.builder(
+                                reverse: true,
+                                itemCount: snapshot.data!.length,
+                                itemBuilder: (context, index) {
+                                  DateTime timestamp = DateTime.parse(
+                                      snapshot.data![index].timestamp!);
+                                  String formattedTime =
+                                      DateFormat('hh:mm a').format(timestamp);
+                                  return ChatBubble(
+                                      message: snapshot.data![index].message!,
+                                      time: formattedTime,
+                                      status: "read",
+                                      isComming:
+                                          snapshot.data![index].receiverId ==
+                                              profileController
+                                                  .currentuser.value.id,
+                                      imageUrl:
+                                          snapshot.data![index].imageUrl ?? "");
+                                });
+                          }
+                        }),
+                    Obx(() => (chatController.selectedImagePath.value != "")
+                        ? Positioned(
+                            left: 0,
+                            right: 0,
+                            bottom: 0,
+                            child: Stack(
+                              children: [
+                                Container(
+                                  margin: const EdgeInsets.only(bottom: 10.0),
+                                  height: 320.h,
+                                  decoration: BoxDecoration(
+                                      color: Theme.of(context)
+                                          .colorScheme
+                                          .primaryContainer,
+                                      image: DecorationImage(
+                                        image: FileImage(
+                                          File(chatController
+                                              .selectedImagePath.value),
+                                        ),
+                                        fit: BoxFit.contain,
+                                      ),
+                                      borderRadius:
+                                          BorderRadius.circular(15.r)),
+                                ),
+                                Positioned(
+                                  right: 0.0,
+                                  child: IconButton(
+                                    onPressed: () {
+                                      chatController.selectedImagePath.value =
+                                          "";
+                                    },
+                                    icon: const Icon(Icons.close),
+                                  ),
+                                ),
+                              ],
+                            ))
+                        : const SizedBox())
+                  ],
+                ),
+              ),
+              TypeMessageBody(userModel: userModel)
+            ],
+          )),
     );
   }
 }

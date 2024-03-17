@@ -8,6 +8,7 @@ import 'package:chat_app_2024/Widgets/primary_btn.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:velocity_x/velocity_x.dart';
 
 class ProfileScreen extends StatelessWidget {
@@ -70,7 +71,7 @@ class ProfileScreen extends StatelessWidget {
                                       onTap: () async {
                                         imagePath.value =
                                             await imagePickerController
-                                                .pickImage();
+                                                .pickImage(ImageSource.gallery);
                                       },
                                       child: Container(
                                         height: 160.h,
